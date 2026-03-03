@@ -13,7 +13,6 @@
       --card:#0f0f0f;
       --muted:#b9b9b9;
     }
-
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
@@ -25,66 +24,39 @@
       justify-content:center;
       padding:24px;
     }
-
     .wrap{ width:min(680px, 100%); }
-
-    .brand{
-      text-align:center;
-      letter-spacing: .35em;
-      font-weight:700;
-      font-size: 34px;
-      color: var(--gold);
-      margin: 0 0 6px 0;
-    }
-
-    .sub{
-      text-align:center;
-      color: var(--muted);
-      margin: 0 0 18px 0;
-      letter-spacing:.25em;
-      font-weight:600;
-      font-size: 14px;
-    }
-
+    .brand{ text-align:center; letter-spacing:.35em; font-weight:700; font-size:34px; color:var(--gold); margin:0 0 6px 0; }
+    .sub{ text-align:center; color:var(--muted); margin:0 0 18px 0; letter-spacing:.25em; font-weight:600; font-size:14px; }
     .card{
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      border: 1px solid rgba(214,177,94,.25);
-      box-shadow: 0 20px 60px rgba(0,0,0,.55);
-      border-radius: 18px;
-      padding: 18px;
+      border:1px solid rgba(214,177,94,.25);
+      box-shadow:0 20px 60px rgba(0,0,0,.55);
+      border-radius:18px;
+      padding:18px;
     }
-
-    .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    .grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
     @media (max-width:620px){ .grid{ grid-template-columns:1fr; } }
-
-    label{
-      font-size:12px;
-      color:var(--muted);
-      display:block;
-      margin: 10px 0 6px;
-    }
-
-    input, select{
+    label{ font-size:12px; color:var(--muted); display:block; margin:10px 0 6px; }
+    input,select{
       width:100%;
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(214,177,94,.22);
+      padding:12px;
+      border-radius:12px;
+      border:1px solid rgba(214,177,94,.22);
       background: rgba(10,10,10,.65);
       color:#fff;
+      outline:none;
     }
-
     .btn{
       width:100%;
       margin-top:14px;
-      padding: 12px;
+      padding:12px;
       border:0;
-      border-radius: 14px;
+      border-radius:14px;
       background: linear-gradient(90deg, var(--gold2), var(--gold));
       color:#1a1204;
       font-weight:800;
       cursor:pointer;
     }
-
     .result{
       margin-top:14px;
       border-radius:14px;
@@ -93,12 +65,11 @@
       text-align:center;
       display:none;
     }
-
     .code{
-      font-size: 18px;
-      letter-spacing: .18em;
+      font-size:18px;
+      letter-spacing:.18em;
       font-weight:800;
-      color: var(--gold);
+      color:var(--gold);
       margin-top:8px;
     }
   </style>
@@ -142,7 +113,7 @@
           <input id="email" type="email" required />
         </div>
 
-        <button class="btn" type="submit">GENERAR CÓDIGO VIP</button>
+        <button class="btn" id="btn" type="submit">GENERAR CÓDIGO VIP</button>
 
         <div class="result" id="resultBox">
           <div>✅ Tu código VIP es:</div>
@@ -153,36 +124,52 @@
   </div>
 
   <script>
-    // ✅ TU NUEVO APPS SCRIPT
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxcdXPGjDmTuE8eXf8p9ZT0AXIbRR1lQ0-z1HipvH7OPdBoCgAdmj20NES_lyFh6YEehA/exec";
+    // 🔁 PEGA AQUÍ TU /exec NUEVO (después del redeploy)
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw5uA7YS22UJ13SjA698IML6B-S4fwhRAx3UXedUSGHzRfBtDA4MMPhC64GfKdozbM1Bw/exec";
 
-    document.getElementById("vipForm").addEventListener("submit", async (e) => {
+    const form = document.getElementById("vipForm");
+    const btn  = document.getElementById("btn");
+
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const host = document.getElementById("host").value;
-      const nombre = document.getElementById("nombre").value;
-      const apellido = document.getElementById("apellido").value;
-      const celular = document.getElementById("celular").value;
-      const email = document.getElementById("email").value;
+      btn.disabled = true;
+      btn.textContent = "GENERANDO...";
 
-      const data = { host, nombre, apellido, celular, email };
+      const data = {
+        host: document.getElementById("host").value,
+        nombre: document.getElementById("nombre").value,
+        apellido: document.getElementById("apellido").value,
+        celular: document.getElementById("celular").value,
+        email: document.getElementById("email").value,
+      };
 
       try {
+        // ⚠️ Enviamos como text/plain para evitar preflight
         const response = await fetch(SCRIPT_URL, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify(data)
         });
 
         const result = await response.json();
 
+        if (!result.ok) {
+          alert("Error: " + (result.error || "No se pudo generar"));
+          console.error(result);
+          return;
+        }
+
         document.getElementById("codigoTxt").textContent = result.codigo;
         document.getElementById("resultBox").style.display = "block";
-        document.getElementById("vipForm").reset();
+        form.reset();
 
-      } catch (error) {
-        alert("Error generando código.");
-        console.error(error);
+      } catch (err) {
+        alert("Error generando código (conexión).");
+        console.error(err);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "GENERAR CÓDIGO VIP";
       }
     });
   </script>
