@@ -12,7 +12,10 @@
       --gold2:#b88a2a;
       --card:#0f0f0f;
       --muted:#b9b9b9;
+      --stroke: rgba(214,177,94,.22);
+      --stroke2: rgba(214,177,94,.45);
     }
+
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
@@ -24,53 +27,109 @@
       justify-content:center;
       padding:24px;
     }
-    .wrap{ width:min(680px, 100%); }
-    .brand{ text-align:center; letter-spacing:.35em; font-weight:700; font-size:34px; color:var(--gold); margin:0 0 6px 0; }
-    .sub{ text-align:center; color:var(--muted); margin:0 0 18px 0; letter-spacing:.25em; font-weight:600; font-size:14px; }
+
+    .wrap{ width:min(720px, 100%); }
+
+    .brand{
+      text-align:center;
+      letter-spacing: .35em;
+      font-weight:800;
+      font-size: 34px;
+      color: var(--gold);
+      margin: 0 0 6px 0;
+    }
+
+    .sub{
+      text-align:center;
+      color: var(--muted);
+      margin: 0 0 18px 0;
+      letter-spacing:.25em;
+      font-weight:700;
+      font-size: 14px;
+    }
+
     .card{
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      border:1px solid rgba(214,177,94,.25);
-      box-shadow:0 20px 60px rgba(0,0,0,.55);
-      border-radius:18px;
-      padding:18px;
+      border: 1px solid rgba(214,177,94,.25);
+      box-shadow: 0 20px 60px rgba(0,0,0,.55);
+      border-radius: 18px;
+      padding: 18px;
+      backdrop-filter: blur(8px);
     }
-    .grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    @media (max-width:620px){ .grid{ grid-template-columns:1fr; } }
-    label{ font-size:12px; color:var(--muted); display:block; margin:10px 0 6px; }
-    input,select{
+
+    .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    @media (max-width:620px){
+      .grid{ grid-template-columns:1fr; }
+      .brand{ font-size:28px; }
+    }
+
+    label{
+      font-size:12px;
+      color:var(--muted);
+      display:block;
+      margin: 10px 0 6px;
+      letter-spacing:.08em;
+    }
+
+    input, select{
       width:100%;
-      padding:12px;
-      border-radius:12px;
-      border:1px solid rgba(214,177,94,.22);
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--stroke);
       background: rgba(10,10,10,.65);
       color:#fff;
       outline:none;
     }
+
+    input:focus, select:focus{
+      border-color: rgba(214,177,94,.55);
+      box-shadow: 0 0 0 3px rgba(214,177,94,.12);
+    }
+
     .btn{
       width:100%;
       margin-top:14px;
-      padding:12px;
+      padding: 12px 14px;
       border:0;
-      border-radius:14px;
+      border-radius: 14px;
       background: linear-gradient(90deg, var(--gold2), var(--gold));
       color:#1a1204;
-      font-weight:800;
+      font-weight:900;
+      letter-spacing:.12em;
       cursor:pointer;
+      transition: transform .06s ease;
     }
+    .btn:active{ transform: scale(.99); }
+    .btn[disabled]{ opacity:.75; cursor:not-allowed; }
+
+    .note{
+      margin-top:10px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align:center;
+    }
+
     .result{
       margin-top:14px;
       border-radius:14px;
-      border:1px dashed rgba(214,177,94,.45);
+      border:1px dashed var(--stroke2);
       padding:14px;
       text-align:center;
       display:none;
     }
+
     .code{
-      font-size:18px;
-      letter-spacing:.18em;
-      font-weight:800;
-      color:var(--gold);
+      font-size: 18px;
+      letter-spacing: .18em;
+      font-weight:900;
+      color: var(--gold);
       margin-top:8px;
+    }
+
+    .small{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:6px;
     }
   </style>
 </head>
@@ -91,61 +150,67 @@
               <option value="H03">H03</option>
             </select>
           </div>
+
           <div>
             <label>CELULAR</label>
-            <input id="celular" type="tel" required />
+            <input id="celular" type="tel" placeholder="0999999999" required />
           </div>
         </div>
 
         <div class="grid">
           <div>
             <label>NOMBRE</label>
-            <input id="nombre" type="text" required />
+            <input id="nombre" type="text" placeholder="Nombre" required />
           </div>
+
           <div>
             <label>APELLIDO</label>
-            <input id="apellido" type="text" required />
+            <input id="apellido" type="text" placeholder="Apellido" required />
           </div>
         </div>
 
         <div>
           <label>CORREO ELECTRÓNICO</label>
-          <input id="email" type="email" required />
+          <input id="email" type="email" placeholder="correo@ejemplo.com" required />
         </div>
 
         <button class="btn" id="btn" type="submit">GENERAR CÓDIGO VIP</button>
+        <div class="note">Se generará el código y se guardará automáticamente en Google Sheets.</div>
 
         <div class="result" id="resultBox">
           <div>✅ Tu código VIP es:</div>
           <div class="code" id="codigoTxt">—</div>
+          <div class="small">Guárdalo o envíalo al Host.</div>
         </div>
       </form>
     </div>
   </div>
 
   <script>
-    // ✅ PEGA AQUÍ TU /exec NUEVO
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxjE8aQzmaszsh6Om9vf-gg3rIpmcV3U-4ByzE-5pkDR7937jFXSXOh90Zf2eKXDyiw/exec";
+    // ✅ TU APPS SCRIPT (GET)
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx0JZf7NWpCXEyv03cYeiO_xNYTFqbIZr8856ebWOY0c21Pdtz1FW26wejn8K6iofjLKg/exec";
 
     const form = document.getElementById("vipForm");
     const btn  = document.getElementById("btn");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+
       btn.disabled = true;
       btn.textContent = "GENERANDO...";
 
-      const params = new URLSearchParams({
-        host: document.getElementById("host").value,
-        nombre: document.getElementById("nombre").value,
-        apellido: document.getElementById("apellido").value,
-        celular: document.getElementById("celular").value,
-        email: document.getElementById("email").value
-      });
+      const host = document.getElementById("host").value.trim();
+      const nombre = document.getElementById("nombre").value.trim();
+      const apellido = document.getElementById("apellido").value.trim();
+      const celular = document.getElementById("celular").value.trim();
+      const email = document.getElementById("email").value.trim();
+
+      const params = new URLSearchParams({ host, nombre, apellido, celular, email });
 
       try {
-        const url = SCRIPT_URL + "?" + params.toString();
+        const url = `${SCRIPT_URL}?${params.toString()}`;
         const response = await fetch(url, { method: "GET" });
+
         const result = await response.json();
 
         if (!result.ok) {
