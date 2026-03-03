@@ -124,34 +124,28 @@
   </div>
 
   <script>
-    // 🔁 PEGA AQUÍ TU /exec NUEVO (después del redeploy)
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw5uA7YS22UJ13SjA698IML6B-S4fwhRAx3UXedUSGHzRfBtDA4MMPhC64GfKdozbM1Bw/exec";
+    // ✅ PEGA AQUÍ TU /exec NUEVO
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxjE8aQzmaszsh6Om9vf-gg3rIpmcV3U-4ByzE-5pkDR7937jFXSXOh90Zf2eKXDyiw/exec";
 
     const form = document.getElementById("vipForm");
     const btn  = document.getElementById("btn");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-
       btn.disabled = true;
       btn.textContent = "GENERANDO...";
 
-      const data = {
+      const params = new URLSearchParams({
         host: document.getElementById("host").value,
         nombre: document.getElementById("nombre").value,
         apellido: document.getElementById("apellido").value,
         celular: document.getElementById("celular").value,
-        email: document.getElementById("email").value,
-      };
+        email: document.getElementById("email").value
+      });
 
       try {
-        // ⚠️ Enviamos como text/plain para evitar preflight
-        const response = await fetch(SCRIPT_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify(data)
-        });
-
+        const url = SCRIPT_URL + "?" + params.toString();
+        const response = await fetch(url, { method: "GET" });
         const result = await response.json();
 
         if (!result.ok) {
