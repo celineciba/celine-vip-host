@@ -101,108 +101,90 @@
       color: var(--gold);
       margin-top:8px;
     }
-
   </style>
 </head>
 
 <body>
+  <div class="wrap">
+    <h1 class="brand">CÉLINE</h1>
+    <p class="sub">VIP HOST</p>
 
-<div class="wrap">
-  <h1 class="brand">CÉLINE</h1>
-  <p class="sub">VIP HOST</p>
+    <div class="card">
+      <form id="vipForm">
+        <div class="grid">
+          <div>
+            <label>HOST</label>
+            <select id="host" required>
+              <option value="H01">H01</option>
+              <option value="H02">H02</option>
+              <option value="H03">H03</option>
+            </select>
+          </div>
+          <div>
+            <label>CELULAR</label>
+            <input id="celular" type="tel" required />
+          </div>
+        </div>
 
-  <div class="card">
-    <form id="vipForm">
-
-      <div class="grid">
-        <div>
-          <label>HOST</label>
-          <select id="host" required>
-            <option value="H01">H01</option>
-            <option value="H02">H02</option>
-            <option value="H03">H03</option>
-          </select>
+        <div class="grid">
+          <div>
+            <label>NOMBRE</label>
+            <input id="nombre" type="text" required />
+          </div>
+          <div>
+            <label>APELLIDO</label>
+            <input id="apellido" type="text" required />
+          </div>
         </div>
 
         <div>
-          <label>CELULAR</label>
-          <input id="celular" type="tel" required />
-        </div>
-      </div>
-
-      <div class="grid">
-        <div>
-          <label>NOMBRE</label>
-          <input id="nombre" type="text" required />
+          <label>CORREO ELECTRÓNICO</label>
+          <input id="email" type="email" required />
         </div>
 
-        <div>
-          <label>APELLIDO</label>
-          <input id="apellido" type="text" required />
+        <button class="btn" type="submit">GENERAR CÓDIGO VIP</button>
+
+        <div class="result" id="resultBox">
+          <div>✅ Tu código VIP es:</div>
+          <div class="code" id="codigoTxt">—</div>
         </div>
-      </div>
-
-      <div>
-        <label>CORREO ELECTRÓNICO</label>
-        <input id="email" type="email" required />
-      </div>
-
-      <button class="btn" type="submit">GENERAR CÓDIGO VIP</button>
-
-      <div class="result" id="resultBox">
-        <div>✅ Tu código VIP es:</div>
-        <div class="code" id="codigoTxt">—</div>
-      </div>
-
-    </form>
+      </form>
+    </div>
   </div>
-</div>
 
-<script>
+  <script>
+    // ✅ TU NUEVO APPS SCRIPT
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxcdXPGjDmTuE8eXf8p9ZT0AXIbRR1lQ0-z1HipvH7OPdBoCgAdmj20NES_lyFh6YEehA/exec";
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuHzrbvmcCl8tg4aX3cGxnSbsmsPkkWW0zid01UYDu0K5eBSxkYlhwNujHL0WtLCYSsQ/exec";
+    document.getElementById("vipForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-document.getElementById("vipForm").addEventListener("submit", async (e)=>{
+      const host = document.getElementById("host").value;
+      const nombre = document.getElementById("nombre").value;
+      const apellido = document.getElementById("apellido").value;
+      const celular = document.getElementById("celular").value;
+      const email = document.getElementById("email").value;
 
-  e.preventDefault();
+      const data = { host, nombre, apellido, celular, email };
 
-  const host = document.getElementById("host").value;
-  const nombre = document.getElementById("nombre").value;
-  const apellido = document.getElementById("apellido").value;
-  const celular = document.getElementById("celular").value;
-  const email = document.getElementById("email").value;
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
 
-  const data = {
-    host,
-    nombre,
-    apellido,
-    celular,
-    email
-  };
+        const result = await response.json();
 
-  try {
+        document.getElementById("codigoTxt").textContent = result.codigo;
+        document.getElementById("resultBox").style.display = "block";
+        document.getElementById("vipForm").reset();
 
-    const response = await fetch(SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify(data),
-      headers: { "Content-Type": "application/json" }
+      } catch (error) {
+        alert("Error generando código.");
+        console.error(error);
+      }
     });
-
-    const result = await response.json();
-
-    document.getElementById("codigoTxt").textContent = result.codigo;
-    document.getElementById("resultBox").style.display = "block";
-
-    document.getElementById("vipForm").reset();
-
-  } catch (error) {
-    alert("Error generando código.");
-    console.error(error);
-  }
-
-});
-
-</script>
-
+  </script>
 </body>
 </html>
