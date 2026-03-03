@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CÉLINE VIP HOST</title>
+  <style>
+    :root{
+      --bg:#070707;
+      --gold:#d6b15e;
+      --gold2:#b88a2a;
+      --card:#0f0f0f;
+      --muted:#b9b9b9;
+    }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 600px at 50% 0%, #1a1306 0%, var(--bg) 55%);
+      color:#fff;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+    .wrap{ width:min(680px, 100%); }
+    .brand{
+      text-align:center;
+      letter-spacing: .35em;
+      font-weight:700;
+      font-size: 34px;
+      color: var(--gold);
+      margin: 0 0 6px 0;
+    }
+    .sub{
+      text-align:center;
+      color: var(--muted);
+      margin: 0 0 18px 0;
+      letter-spacing:.25em;
+      font-weight:600;
+      font-size: 14px;
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border: 1px solid rgba(214,177,94,.25);
+      box-shadow: 0 20px 60px rgba(0,0,0,.55);
+      border-radius: 18px;
+      padding: 18px;
+      backdrop-filter: blur(8px);
+    }
+    .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    @media (max-width:620px){ .grid{ grid-template-columns:1fr; } .brand{font-size:28px;} }
+    label{ font-size:12px; color:var(--muted); display:block; margin: 10px 0 6px; letter-spacing:.08em; }
+    input, select{
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(214,177,94,.22);
+      background: rgba(10,10,10,.65);
+      color:#fff;
+      outline:none;
+    }
+    input:focus, select:focus{
+      border-color: rgba(214,177,94,.55);
+      box-shadow: 0 0 0 3px rgba(214,177,94,.12);
+    }
+    .row{ margin-top:10px; }
+    .btn{
+      width:100%;
+      margin-top:14px;
+      padding: 12px 14px;
+      border:0;
+      border-radius: 14px;
+      background: linear-gradient(90deg, var(--gold2), var(--gold));
+      color:#1a1204;
+      font-weight:800;
+      letter-spacing:.12em;
+      cursor:pointer;
+    }
+    .note{ margin-top:10px; color: var(--muted); font-size: 12px; text-align:center; }
+    .result{
+      margin-top:14px;
+      border-radius:14px;
+      border:1px dashed rgba(214,177,94,.45);
+      padding:14px;
+      text-align:center;
+      display:none;
+    }
+    .code{
+      font-size: 18px;
+      letter-spacing: .18em;
+      font-weight:800;
+      color: var(--gold);
+      margin-top:8px;
+    }
+    .small{ font-size:12px; color:var(--muted); margin-top:6px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 class="brand">CÉLINE</h1>
+    <p class="sub">VIP HOST</p>
+
+    <div class="card">
+      <form id="vipForm">
+        <div class="grid">
+          <div>
+            <label>HOST</label>
+            <select id="host" required>
+              <option value="H01">H01</option>
+              <option value="H02">H02</option>
+              <option value="H03">H03</option>
+            </select>
+          </div>
+          <div>
+            <label>CELULAR</label>
+            <input id="celular" type="tel" placeholder="0999999999" required />
+          </div>
+        </div>
+
+        <div class="grid row">
+          <div>
+            <label>NOMBRE</label>
+            <input id="nombre" type="text" placeholder="Nombre" required />
+          </div>
+          <div>
+            <label>APELLIDO</label>
+            <input id="apellido" type="text" placeholder="Apellido" required />
+          </div>
+        </div>
+
+        <div class="row">
+          <label>CORREO ELECTRÓNICO</label>
+          <input id="email" type="email" placeholder="correo@ejemplo.com" required />
+        </div>
+
+        <button class="btn" type="submit">GENERAR CÓDIGO VIP</button>
+        <div class="note">Al generar, se mostrará tu código. (Luego lo conectamos a Google Sheets)</div>
+
+        <div class="result" id="resultBox">
+          <div>✅ Tu código VIP es:</div>
+          <div class="code" id="codigoTxt">—</div>
+          <div class="small">Guárdalo o envíalo a tu Host.</div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function random4(){
+      const chars = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+      let out = "";
+      for(let i=0;i<4;i++) out += chars[Math.floor(Math.random()*chars.length)];
+      return out;
+    }
+
+    document.getElementById("vipForm").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+
+      const host = document.getElementById("host").value.trim();
+      const nombre = document.getElementById("nombre").value.trim();
+      const apellido = document.getElementById("apellido").value.trim();
+      const celular = document.getElementById("celular").value.trim();
+      const email = document.getElementById("email").value.trim();
+
+      // Código elegante
+      const codigo = `CEL•${host}•VIP•${random4()}`;
+
+      // Mostrar resultado (por ahora local)
+      document.getElementById("codigoTxt").textContent = codigo;
+      document.getElementById("resultBox").style.display = "block";
+
+      // ✅ Aquí luego conectamos tu Apps Script para guardar en Google Sheets
+      // (cuando me pases el link /exec, lo activamos)
+    });
+  </script>
+</body>
+</html>
