@@ -59,10 +59,7 @@
     }
     .voucherOverlay{ position:absolute; inset:0; background: linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.35)); }
 
-    .vText{
-      position:absolute; left:10%; right:10%; text-align:center;
-      text-shadow:0 2px 18px rgba(0,0,0,.7);
-    }
+    .vText{ position:absolute; left:10%; right:10%; text-align:center; text-shadow:0 2px 18px rgba(0,0,0,.7); }
     .vTitle{ top:16%; font-weight:800; letter-spacing:.18em; font-size:26px; color:var(--gold); }
     .vSubTitle{ top:22%; font-weight:700; letter-spacing:.22em; font-size:12px; color: rgba(255,255,255,.75); }
     .vName{ top:30%; font-weight:800; font-size:18px; letter-spacing:.08em; color: rgba(255,255,255,.92); }
@@ -99,7 +96,6 @@
 <body>
   <div class="wrap">
 
-    <!-- PAGE 1 -->
     <div id="pageForm">
       <h1 class="brand">CÉLINE</h1>
       <p class="sub">VIP HOST</p>
@@ -143,7 +139,6 @@
       </div>
     </div>
 
-    <!-- PAGE 2 -->
     <div id="pageVoucher" class="hidden">
       <div class="voucherWrap">
         <div class="voucherCanvas" id="voucherCanvas">
@@ -192,9 +187,23 @@
       footer: "Recuerda indicar en la puerta de ingreso y en barra para poder acceder."
     };
 
-    // ✅ Convierte el código seguro CEL-H01-VIP-ABCD a bonito CEL•H01•VIP•ABCD
-    function prettyCode(codigoSeguro){
-      return String(codigoSeguro || "").replaceAll("-", "•");
+    function prettyCode(code){ return String(code || "").replaceAll("-", "•"); }
+
+    // ✅ Esto es CLAVE: limpia el código para barcode (solo A-Z 0-9 -)
+    function barcodeSafe(code){
+      return String(code || "").toUpperCase().replace(/[^A-Z0-9-]/g, "");
+    }
+
+    function renderBarcode(code){
+      const safe = barcodeSafe(code);
+
+      // ✅ CODE39 = súper estable para letras/números/guiones
+      JsBarcode("#barcode", safe, {
+        format: "CODE39",
+        displayValue: false,
+        margin: 0,
+        height: 58
+      });
     }
 
     function showVoucher({host, nombre, apellido, codigoSeguro}) {
@@ -213,13 +222,8 @@
         ul.appendChild(li);
       });
 
-      // ✅ Barcode SIEMPRE con el código SEGURO (sin •)
-      JsBarcode("#barcode", codigoSeguro, {
-        format: "CODE128",
-        displayValue: false,
-        margin: 0,
-        height: 58
-      });
+      // ✅ barcode estable
+      renderBarcode(codigoSeguro);
 
       pageForm.classList.add("hidden");
       pageVoucher.classList.remove("hidden");
@@ -261,17 +265,14 @@
       try {
         const url = `${SCRIPT_URL}?${params.toString()}`;
         const response = await fetch(url, { method: "GET", cache: "no-store" });
-
         if (!response.ok) throw new Error("HTTP " + response.status);
 
         const result = await response.json();
         if (!result.ok) throw new Error(result.error || "No se pudo generar");
 
-        // ✅ AHORA PASAMOS A LA “PÁGINA 2”
         showVoucher({ host, nombre, apellido, codigoSeguro: result.codigo });
 
       } catch (err) {
-        // ✅ Mensaje real (ya no dice “conexión” si no es conexión)
         alert("Error: " + String(err));
         console.error(err);
         btn.disabled = false;
