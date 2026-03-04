@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CÉLINE VIP HOST</title>
+
+  <!-- Barcode + Export as Image -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#070707;
+      --gold:#d6b15e;
+      --gold2:#b88a2a;
+      --muted:#b9b9b9;
+      --stroke: rgba(214,177,94,.22);
+      --stroke2: rgba(214,177,94,.45);
+      --shadow: rgba(0,0,0,.55);
+
+      /* ✅ Ajustes finos de posiciones (puedes mover 1-2% si quieres) */
+      --nameTop: 19%;
+      --metaTop: 26%;
+      --barcodeTop: 38%;
+      --benefTop: 63%;
+      --footerBottom: 6%;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 600px at 50% 0%, #1a1306 0%, var(--bg) 55%);
+      color:#fff;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+
+    .wrap{ width:min(720px, 100%); }
+
+    .brand{
+      text-align:center;
+      letter-spacing: .35em;
+      font-weight:800;
+      font-size: 34px;
+      color: var(--gold);
+      margin: 0 0 6px 0;
+    }
+
+    .sub{
+      text-align:center;
+      color: var(--muted);
+      margin: 0 0 18px 0;
+      letter-spacing:.25em;
+      font-weight:700;
+      font-size: 14px;
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border: 1px solid rgba(214,177,94,.25);
+      box-shadow: 0 20px 60px var(--shadow);
+      border-radius: 18px;
+      padding: 18px;
+      backdrop-filter: blur(8px);
+    }
+
+    .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    @media (max-width:620px){
+      .grid{ grid-template-columns:1fr; }
+      .brand{ font-size:28px; }
+    }
+
+    label{
+      font-size:12px;
+      color:var(--muted);
+      display:block;
+      margin: 10px 0 6px;
+      letter-spacing:.08em;
+    }
+
+    input, select{
+      width:100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--stroke);
+      background: rgba(10,10,10,.65);
+      color:#fff;
+      outline:none;
+    }
+
+    input:focus, select:focus{
+      border-color: rgba(214,177,94,.55);
+      box-shadow: 0 0 0 3px rgba(214,177,94,.12);
+    }
+
+    .btn{
+      width:100%;
+      margin-top:14px;
+      padding: 12px 14px;
+      border:0;
+      border-radius: 14px;
+      background: linear-gradient(90deg, var(--gold2), var(--gold));
+      color:#1a1204;
+      font-weight:900;
+      letter-spacing:.12em;
+      cursor:pointer;
+      transition: transform .06s ease;
+    }
+    .btn:active{ transform: scale(.99); }
+    .btn[disabled]{ opacity:.75; cursor:not-allowed; }
+
+    .btn.secondary{
+      background: rgba(10,10,10,.65);
+      color: var(--gold);
+      border: 1px solid rgba(214,177,94,.35);
+      letter-spacing:.10em;
+    }
+
+    .note{
+      margin-top:10px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align:center;
+    }
+
+    /* ---------- VOUCHER VIEW ---------- */
+    .hidden{ display:none !important; }
+
+    .voucherWrap{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    /* ✅ 9:16 exacto */
+    .voucherCanvas{
+      width:min(440px, 100%);
+      aspect-ratio: 9 / 16;
+      border-radius: 22px;
+      overflow:hidden;
+      position:relative;
+      box-shadow: 0 22px 70px rgba(0,0,0,.65);
+      border: 1px solid rgba(214,177,94,.25);
+      background:#000; /* fallback */
+    }
+
+    /* ✅ Fondo como IMG (html2canvas lo captura) */
+    .bgImg{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;      /* ✅ llena sin barras negras */
+      object-position:center;
+      z-index:0;
+      display:block;
+    }
+
+    /* overlay mínimo para lectura sin tapar el arte */
+    .overlay{
+      position:absolute;
+      inset:0;
+      background: linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.18));
+      z-index:1;
+      pointer-events:none;
+    }
+
+    .vText{
+      position:absolute;
+      left: 10%;
+      right: 10%;
+      text-align:center;
+      z-index:2;
+      pointer-events:none;
+    }
+
+    /* ✅ Nombre: más abajo para NO tapar “Clientes VIP” */
+    .vName{
+      top: var(--nameTop);
+      font-weight: 900;
+      font-size: 20px;
+      letter-spacing:.02em;
+      color: rgba(255,255,255,.95);
+      text-shadow: 0 3px 18px rgba(0,0,0,.75);
+      line-height: 1.1;
+    }
+
+    /* ✅ Meta (grupo/validez/host) */
+    .vMeta{
+      top: var(--metaTop);
+      font-weight: 800;
+      font-size: 14px;
+      color: rgba(255,255,255,.92);
+      text-shadow: 0 3px 16px rgba(0,0,0,.8);
+      line-height: 1.25;
+    }
+
+    /* ✅ Zona barcode EXACTA con “papel blanco” dentro */
+    .barcodeZone{
+      position:absolute;
+      left: 10%;
+      right: 10%;
+      top: var(--barcodeTop);
+      z-index:2;
+      padding: 14px 14px 10px;
+      border-radius: 18px;
+      border: 1px solid rgba(214,177,94,.35);
+      background: rgba(0,0,0,.18);
+      backdrop-filter: blur(4px);
+    }
+
+    .barcodePaper{
+      background:#fff;
+      border-radius: 10px;
+      padding: 10px 10px 6px;
+      overflow:hidden;
+    }
+
+    #barcode{
+      width:100%;
+      height:72px;
+      display:block;
+    }
+
+    .vCode{
+      margin-top:10px;
+      text-align:center;
+      font-weight: 950;
+      font-size: 16px;
+      letter-spacing:.12em;
+      color: var(--gold);
+      text-shadow: 0 2px 14px rgba(0,0,0,.75);
+      word-break: break-word;
+    }
+
+    /* ✅ Beneficios: alineados y elegantes */
+    .benefits{
+      position:absolute;
+      left: 10%;
+      right: 10%;
+      top: var(--benefTop);
+      z-index:2;
+      padding: 14px 14px 12px;
+      border-radius: 18px;
+      border: 1px dashed rgba(214,177,94,.50);
+      background: rgba(0,0,0,.20);
+      backdrop-filter: blur(4px);
+    }
+
+    .benefits h3{
+      margin:0 0 10px 0;
+      text-align:center;
+      color: var(--gold);
+      letter-spacing:.12em;
+      font-size: 14px;
+      font-weight: 950;
+      text-shadow: 0 2px 14px rgba(0,0,0,.75);
+    }
+
+    .benefits ul{
+      margin:0;
+      padding-left: 18px;
+      line-height:1.55;
+      font-size: 14px;
+      font-weight: 750;
+      color: rgba(255,255,255,.95);
+      text-shadow: 0 2px 14px rgba(0,0,0,.75);
+    }
+
+    /* ✅ Footer */
+    .vFooter{
+      position:absolute;
+      left: 10%;
+      right: 10%;
+      bottom: var(--footerBottom);
+      text-align:center;
+      font-size: 12.5px;
+      font-weight: 650;
+      color: rgba(255,255,255,.92);
+      text-shadow: 0 2px 16px rgba(0,0,0,.9);
+      z-index:2;
+      pointer-events:none;
+      line-height: 1.2;
+    }
+
+    .actionsRow{
+      width:min(440px, 100%);
+      display:grid;
+      gap:10px;
+      grid-template-columns: 1fr 1fr;
+    }
+    @media (max-width:460px){
+      .actionsRow{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <!-- PAGE 1 (FORM) -->
+    <div id="pageForm">
+      <h1 class="brand">CÉLINE</h1>
+      <p class="sub">VIP HOST</p>
+
+      <div class="card">
+        <form id="vipForm">
+          <div class="grid">
+            <div>
+              <label>HOST</label>
+              <select id="host" required>
+                <option value="H01">H01</option>
+                <option value="H02">H02</option>
+                <option value="H03">H03</option>
+              </select>
+            </div>
+
+            <div>
+              <label>CELULAR</label>
+              <input id="celular" type="tel" placeholder="0999999999" required />
+            </div>
+          </div>
+
+          <div class="grid">
+            <div>
+              <label>NOMBRE</label>
+              <input id="nombre" type="text" placeholder="Nombre" required />
+            </div>
+
+            <div>
+              <label>APELLIDO</label>
+              <input id="apellido" type="text" placeholder="Apellido" required />
+            </div>
+          </div>
+
+          <div>
+            <label>CORREO ELECTRÓNICO</label>
+            <input id="email" type="email" placeholder="correo@ejemplo.com" required />
+          </div>
+
+          <button class="btn" id="btn" type="submit">GENERAR CÓDIGO VIP</button>
+          <div class="note">Se generará el código y se guardará automáticamente en Google Sheets.</div>
+        </form>
+      </div>
+    </div>
+
+    <!-- PAGE 2 (VOUCHER) -->
+    <div id="pageVoucher" class="hidden">
+      <div class="voucherWrap">
+        <div class="voucherCanvas" id="voucherCanvas">
+
+          <!-- ✅ FONDO: debe existir plantilla.jpg al lado de index.html -->
+          <img id="bgImg" class="bgImg" src="plantilla.jpg" crossorigin="anonymous" alt="Plantilla" />
+          <div class="overlay"></div>
+
+          <!-- ✅ SOLO TEXTO NECESARIO (no repetimos CÉLINE/VIP HOST porque ya está en la plantilla) -->
+          <div class="vText vName" id="vNombre">—</div>
+          <div class="vText vMeta" id="vMeta">—</div>
+
+          <div class="barcodeZone">
+            <div class="barcodePaper">
+              <svg id="barcode"></svg>
+            </div>
+            <div class="vCode" id="vCodigo">—</div>
+          </div>
+
+          <div class="benefits">
+            <h3>BENEFICIOS ACTIVADOS</h3>
+            <ul id="benefList"></ul>
+          </div>
+
+          <div class="vFooter" id="vFooter">
+            Recuerda indicar en la puerta de ingreso y en barra para poder acceder.
+          </div>
+        </div>
+
+        <div class="actionsRow">
+          <button class="btn secondary" id="btnNew">NUEVO CÓDIGO</button>
+          <button class="btn" id="btnDownload">DESCARGAR IMAGEN</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ✅ TU URL NUEVA (YA PUESTA, NO TOCAR)
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUkMPywHa_Pj0NdNua0GUZh1gcq7K6NZivjdrssJ62ddICi3c-k-icxhp5PbxIXncXAg/exec";
+
+    const form = document.getElementById("vipForm");
+    const btn  = document.getElementById("btn");
+
+    const pageForm    = document.getElementById("pageForm");
+    const pageVoucher = document.getElementById("pageVoucher");
+
+    const bgImg = document.getElementById("bgImg");
+
+    // ✅ Config promo (edita si quieres)
+    const PROMO = {
+      grupo: "Grupo confirmado: 5 personas",
+      valido: "Válido hasta 22h30",
+      beneficios: [
+        "Mesa asegurada",
+        "3x2 hasta 00h00",
+        "5 shots bienvenida"
+      ],
+      footer: "Recuerda indicar en la puerta de ingreso y en barra para poder acceder."
+    };
+
+    function waitImage(imgEl) {
+      return new Promise((resolve) => {
+        if (!imgEl) return resolve();
+        if (imgEl.complete && imgEl.naturalWidth > 0) return resolve();
+        imgEl.onload = () => resolve();
+        imgEl.onerror = () => resolve();
+      });
+    }
+
+    function showVoucher({host, nombre, apellido, codigo}) {
+      // ✅ Nombre abajo para no tapar “Clientes VIP”
+      document.getElementById("vNombre").textContent = `${nombre} ${apellido}`.trim();
+
+      // ✅ Meta elegante en 2 líneas si hace falta
+      document.getElementById("vMeta").textContent = `${PROMO.grupo} • ${PROMO.valido} • Host: ${host}`;
+
+      document.getElementById("vCodigo").textContent = codigo;
+      document.getElementById("vFooter").textContent = PROMO.footer;
+
+      const ul = document.getElementById("benefList");
+      ul.innerHTML = "";
+      PROMO.beneficios.forEach(b => {
+        const li = document.createElement("li");
+        li.textContent = b;
+        ul.appendChild(li);
+      });
+
+      // ✅ Barcode: CODE128 (soporta letras/números/guiones/puntos)
+      JsBarcode("#barcode", codigo, {
+        format: "CODE128",
+        displayValue: false,
+        margin: 0,
+        height: 66
+      });
+
+      pageForm.classList.add("hidden");
+      pageVoucher.classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function showFormAgain(){
+      pageVoucher.classList.add("hidden");
+      pageForm.classList.remove("hidden");
+      form.reset();
+      btn.disabled = false;
+      btn.textContent = "GENERAR CÓDIGO VIP";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function downloadVoucher(){
+      await waitImage(bgImg);
+
+      const node = document.getElementById("voucherCanvas");
+      const canvas = await html2canvas(node, {
+        useCORS: true,
+        backgroundColor: null,
+        scale: 2,
+        logging: false
+      });
+
+      const a = document.createElement("a");
+      a.href = canvas.toDataURL("image/png");
+      a.download = "CELINE_VIP_VOUCHER.png";
+      a.click();
+    }
+
+    async function safeJson(response){
+      const text = await response.text();
+      try { return JSON.parse(text); }
+      catch { return { ok:false, error:"Respuesta no válida (no JSON). Revisa permisos del Apps Script.", raw:text }; }
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      btn.disabled = true;
+      btn.textContent = "GENERANDO...";
+
+      const host = document.getElementById("host").value.trim();
+      const nombre = document.getElementById("nombre").value.trim();
+      const apellido = document.getElementById("apellido").value.trim();
+      const celular = document.getElementById("celular").value.trim();
+      const email = document.getElementById("email").value.trim();
+
+      const params = new URLSearchParams({ host, nombre, apellido, celular, email });
+      // ✅ cache buster para evitar respuestas “viejas”
+      params.set("t", String(Date.now()));
+
+      try {
+        const url = `${SCRIPT_URL}?${params.toString()}`;
+        const response = await fetch(url, { method: "GET" });
+
+        const result = await safeJson(response);
+
+        if (!result.ok) {
+          alert("Error: " + (result.error || "No se pudo generar"));
+          console.error(result);
+          btn.disabled = false;
+          btn.textContent = "GENERAR CÓDIGO VIP";
+          return;
+        }
+
+        // ✅ Espera el fondo antes de mostrar voucher (para que se vea fino al instante)
+        await waitImage(bgImg);
+
+        showVoucher({ host, nombre, apellido, codigo: result.codigo });
+
+      } catch (err) {
+        alert("Error generando código (conexión).");
+        console.error(err);
+        btn.disabled = false;
+        btn.textContent = "GENERAR CÓDIGO VIP";
+      }
+    });
+
+    document.getElementById("btnNew").addEventListener("click", showFormAgain);
+    document.getElementById("btnDownload").addEventListener("click", downloadVoucher);
+
+    bgImg.addEventListener("error", () => {
+      console.error("NO se pudo cargar plantilla.jpg. Revisa el nombre exacto y que esté junto a index.html.");
+    });
+  </script>
+</body>
+</html>
