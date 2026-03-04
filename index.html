@@ -15,8 +15,11 @@
       --gold2:#b88a2a;
       --muted:#b9b9b9;
       --stroke: rgba(214,177,94,.22);
+      --stroke2: rgba(214,177,94,.45);
       --shadow: rgba(0,0,0,.55);
     }
+
+    *{ box-sizing:border-box; }
 
     body{
       margin:0;
@@ -40,7 +43,6 @@
       color: var(--gold);
       margin: 0 0 6px 0;
     }
-
     .sub{
       text-align:center;
       color: var(--muted);
@@ -140,6 +142,7 @@
       background:#000;
     }
 
+    /* Fondo real para que html2canvas lo capture */
     .bgImg{
       position:absolute;
       inset:0;
@@ -153,7 +156,7 @@
     .voucherOverlay{
       position:absolute;
       inset:0;
-      background: linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.28));
+      background: linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.30));
       z-index:1;
       pointer-events:none;
     }
@@ -168,20 +171,18 @@
       pointer-events:none;
     }
 
-    /* ✅ Aquí mueves tamaño y altura del nombre */
+    /* Ajusta aquí posiciones y tamaños */
     .vName{
-      top: 24%;
+      top: 23%;
       font-weight:900;
-      font-size: 18px;     /* baja/sube tamaño */
+      font-size: 17px;
       letter-spacing:.03em;
       color: rgba(255,255,255,.95);
     }
-
-    /* ✅ Aquí mueves tamaño y altura del “grupo confirmado…” */
     .vMeta{
-      top: 30%;
+      top: 28.5%;
       font-weight:800;
-      font-size: 13px;     /* baja/sube tamaño */
+      font-size: 12.5px;
       letter-spacing:.01em;
       color: rgba(255,255,255,.88);
     }
@@ -190,7 +191,7 @@
       position:absolute;
       left: 10%;
       right: 10%;
-      top: 44%;
+      top: 43%;
       padding: 14px 12px;
       border-radius: 16px;
       background: rgba(0,0,0,.40);
@@ -215,7 +216,7 @@
       position:absolute;
       left: 10%;
       right: 10%;
-      top: 64%;
+      top: 63.5%;
       padding: 14px 14px;
       border-radius: 16px;
       background: rgba(0,0,0,.34);
@@ -264,7 +265,7 @@
     }
     @media (max-width:420px){ .actionsRow{ grid-template-columns: 1fr; } }
 
-    /* Aviso visible si la plantilla no carga */
+    /* Aviso si la plantilla no carga */
     .bgFail{
       position:absolute;
       inset:0;
@@ -276,16 +277,23 @@
       padding:20px;
       background: rgba(0,0,0,.65);
       color:#fff;
-      font-weight:800;
+      font-weight:900;
       letter-spacing:.06em;
     }
-    .bgFail small{ display:block; margin-top:10px; opacity:.85; font-weight:600; }
+    .bgFail small{
+      display:block;
+      margin-top:10px;
+      opacity:.85;
+      font-weight:650;
+      line-height:1.4;
+    }
   </style>
 </head>
 
 <body>
   <div class="wrap">
 
+    <!-- PAGE 1 -->
     <div id="pageForm">
       <h1 class="brand">CÉLINE</h1>
       <p class="sub">VIP HOST</p>
@@ -331,12 +339,12 @@
       </div>
     </div>
 
+    <!-- PAGE 2 -->
     <div id="pageVoucher" class="hidden">
       <div class="voucherWrap">
+
         <div class="voucherCanvas" id="voucherCanvas">
-
-          <img id="bgImg" class="bgImg" alt="Plantilla" />
-
+          <img id="bgImg" class="bgImg" alt="Plantilla" crossorigin="anonymous" />
           <div class="voucherOverlay"></div>
 
           <div class="vText vName" id="vNombre">—</div>
@@ -358,35 +366,27 @@
 
           <div class="bgFail" id="bgFail">
             NO CARGA LA PLANTILLA
-            <small>Revisa que exista: plantilla.jpg en GitHub Pages</small>
+            <small>
+              Si esta URL da 404 o blanco, Pages no está publicando el archivo:<br>
+              https://celineciba.github.io/celine-vip-host/plantilla.jpg
+            </small>
           </div>
-
         </div>
 
         <div class="actionsRow">
-          <button class="btn secondary" id="btnNew">NUEVO CÓDIGO</button>
-          <button class="btn" id="btnDownload">DESCARGAR IMAGEN</button>
+          <button class="btn secondary" id="btnNew" type="button">NUEVO CÓDIGO</button>
+          <button class="btn" id="btnDownload" type="button">DESCARGAR IMAGEN</button>
         </div>
+
       </div>
     </div>
 
   </div>
 
   <script>
-    // ✅ Apps Script (tu nuevo)
+    // ========= CONFIG =========
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3RD0iyOuht2NRM3iLJ49Ddtqmhn3a0CnOapO9ZQaSvcFBc-0JPHqOdLiFk6ukUK9y7Q/exec";
-
-    // ✅ Fondo: URL ABSOLUTA (esto evita problemas de rutas)
-    const BG_URL = "https://celineciba.github.io/celine-vip-host/plantilla.jpg";
-
-    const form = document.getElementById("vipForm");
-    const btn  = document.getElementById("btn");
-
-    const pageForm    = document.getElementById("pageForm");
-    const pageVoucher = document.getElementById("pageVoucher");
-
-    const bgImg  = document.getElementById("bgImg");
-    const bgFail = document.getElementById("bgFail");
+    const BG_URL     = "https://celineciba.github.io/celine-vip-host/plantilla.jpg";
 
     const PROMO = {
       grupo: "Grupo confirmado: 5 personas",
@@ -395,8 +395,21 @@
       footer: "Recuerda indicar en la puerta de ingreso y en barra para poder acceder."
     };
 
+    // ========= HELPERS =========
+    const $ = (id) => document.getElementById(id);
+
+    const form = $("vipForm");
+    const btn  = $("btn");
+
+    const pageForm    = $("pageForm");
+    const pageVoucher = $("pageVoucher");
+
+    const bgImg  = $("bgImg");
+    const bgFail = $("bgFail");
+
     function setBgWithBust(){
       bgFail.style.display = "none";
+      // cache bust para evitar que se quede con una versión vieja
       bgImg.src = BG_URL + "?v=" + Date.now();
     }
 
@@ -410,12 +423,12 @@
     }
 
     function showVoucher({host, nombre, apellido, codigo}) {
-      document.getElementById("vNombre").textContent = `${nombre} ${apellido}`.trim();
-      document.getElementById("vMeta").textContent   = `${PROMO.grupo} • ${PROMO.valido} • Host: ${host}`;
-      document.getElementById("vCodigo").textContent = codigo;
-      document.getElementById("vFooter").textContent = PROMO.footer;
+      $("vNombre").textContent = `${nombre} ${apellido}`.trim();
+      $("vMeta").textContent   = `${PROMO.grupo} • ${PROMO.valido} • Host: ${host}`;
+      $("vCodigo").textContent = codigo;
+      $("vFooter").textContent = PROMO.footer;
 
-      const ul = document.getElementById("benefList");
+      const ul = $("benefList");
       ul.innerHTML = "";
       PROMO.beneficios.forEach(b => {
         const li = document.createElement("li");
@@ -448,7 +461,7 @@
       const ok = await waitImage(bgImg);
       if (!ok) bgFail.style.display = "flex";
 
-      const node = document.getElementById("voucherCanvas");
+      const node = $("voucherCanvas");
       const canvas = await html2canvas(node, {
         useCORS: true,
         backgroundColor: null,
@@ -462,35 +475,43 @@
       a.click();
     }
 
+    // ========= EVENTS =========
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       btn.disabled = true;
       btn.textContent = "GENERANDO...";
 
-      const host = document.getElementById("host").value.trim();
-      const nombre = document.getElementById("nombre").value.trim();
-      const apellido = document.getElementById("apellido").value.trim();
-      const celular = document.getElementById("celular").value.trim();
-      const email = document.getElementById("email").value.trim();
+      const host     = $("host").value.trim();
+      const nombre   = $("nombre").value.trim();
+      const apellido = $("apellido").value.trim();
+      const celular  = $("celular").value.trim();
+      const email    = $("email").value.trim();
 
-      const params = new URLSearchParams({ host, nombre, apellido, celular, email });
-
-      // timeout para que no se quede pegado
+      // Timeout para que NO se quede pegado
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 15000);
 
       try {
-        // siempre reintenta cargar el fondo al entrar al voucher
+        // intenta cargar fondo
         setBgWithBust();
-        await waitImage(bgImg); // no bloquea si falla, solo intenta
+        await waitImage(bgImg);
 
-        const url = `${SCRIPT_URL}?${params.toString()}&t=${Date.now()}`;
-        const response = await fetch(url, { method: "GET", signal: controller.signal, cache: "no-store" });
-        const result = await response.json();
+        const params = new URLSearchParams({ host, nombre, apellido, celular, email, t: Date.now().toString() });
+        const url = `${SCRIPT_URL}?${params.toString()}`;
 
-        if (!result.ok) {
-          alert("Error: " + (result.error || "No se pudo generar"));
+        const res = await fetch(url, { method: "GET", signal: controller.signal, cache: "no-store" });
+
+        // Si Apps Script responde HTML (error) esto evita que reviente
+        const text = await res.text();
+        let result;
+        try { result = JSON.parse(text); }
+        catch {
+          throw new Error("Respuesta no-JSON desde Apps Script");
+        }
+
+        if (!result.ok || !result.codigo) {
+          alert("Error: " + (result?.error || "No se pudo generar"));
           btn.disabled = false;
           btn.textContent = "GENERAR CÓDIGO VIP";
           return;
@@ -499,7 +520,7 @@
         showVoucher({ host, nombre, apellido, codigo: result.codigo });
 
       } catch (err) {
-        alert("Error generando código (conexión o timeout).");
+        alert("Error generando código (conexión/timeout o Apps Script).");
         btn.disabled = false;
         btn.textContent = "GENERAR CÓDIGO VIP";
       } finally {
@@ -507,10 +528,10 @@
       }
     });
 
-    document.getElementById("btnNew").addEventListener("click", showFormAgain);
-    document.getElementById("btnDownload").addEventListener("click", downloadVoucher);
+    $("btnNew").addEventListener("click", showFormAgain);
+    $("btnDownload").addEventListener("click", downloadVoucher);
 
-    // Inicializa fondo al cargar la web
+    // Init
     setBgWithBust();
     bgImg.addEventListener("error", () => { bgFail.style.display = "flex"; });
   </script>
