@@ -1,375 +1,465 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CÉLINE VIP HOST</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CÉLINE VIP HOST</title>
 
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <!-- Barcode + Export as Image -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-<style>
+  <style>
+    :root{
+      --bg:#070707;
+      --gold:#d6b15e;
+      --gold2:#b88a2a;
+      --muted:#b9b9b9;
+      --stroke: rgba(214,177,94,.22);
+      --stroke2: rgba(214,177,94,.45);
+      --shadow: rgba(0,0,0,.55);
+    }
 
-body{
-margin:0;
-font-family:Arial, Helvetica, sans-serif;
-background:#070707;
-color:white;
-display:flex;
-justify-content:center;
-align-items:center;
-min-height:100vh;
-}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 600px at 50% 0%, #1a1306 0%, var(--bg) 55%);
+      color:#fff;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
 
-.wrap{
-width:420px;
-}
+    .wrap{ width:min(720px, 100%); }
 
-.brand{
-text-align:center;
-letter-spacing:8px;
-font-weight:800;
-font-size:34px;
-color:#d6b15e;
-margin-bottom:5px;
-}
+    .brand{
+      text-align:center;
+      letter-spacing: .35em;
+      font-weight:800;
+      font-size: 34px;
+      color: var(--gold);
+      margin: 0 0 6px 0;
+    }
 
-.sub{
-text-align:center;
-color:#ccc;
-margin-bottom:20px;
-}
+    .sub{
+      text-align:center;
+      color: var(--muted);
+      margin: 0 0 18px 0;
+      letter-spacing:.25em;
+      font-weight:700;
+      font-size: 14px;
+    }
 
-.card{
-background:#0e0e0e;
-border-radius:16px;
-padding:20px;
-border:1px solid rgba(214,177,94,.3);
-}
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border: 1px solid rgba(214,177,94,.25);
+      box-shadow: 0 20px 60px var(--shadow);
+      border-radius: 18px;
+      padding: 18px;
+      backdrop-filter: blur(8px);
+    }
 
-label{
-font-size:12px;
-color:#bbb;
-display:block;
-margin-top:10px;
-}
+    .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    @media (max-width:620px){
+      .grid{ grid-template-columns:1fr; }
+      .brand{ font-size:28px; }
+    }
 
-input,select{
-width:100%;
-padding:10px;
-border-radius:10px;
-border:1px solid #333;
-background:#111;
-color:white;
-}
+    label{
+      font-size:12px;
+      color:var(--muted);
+      display:block;
+      margin: 10px 0 6px;
+      letter-spacing:.08em;
+    }
 
-.btn{
-width:100%;
-margin-top:15px;
-padding:12px;
-border-radius:12px;
-border:none;
-font-weight:bold;
-background:linear-gradient(90deg,#b88a2a,#d6b15e);
-cursor:pointer;
-}
+    input, select{
+      width:100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--stroke);
+      background: rgba(10,10,10,.65);
+      color:#fff;
+      outline:none;
+    }
 
-.btn.secondary{
-background:#111;
-border:1px solid #d6b15e;
-color:#d6b15e;
-}
+    input:focus, select:focus{
+      border-color: rgba(214,177,94,.55);
+      box-shadow: 0 0 0 3px rgba(214,177,94,.12);
+    }
 
-.hidden{
-display:none;
-}
+    .btn{
+      width:100%;
+      margin-top:14px;
+      padding: 12px 14px;
+      border:0;
+      border-radius: 14px;
+      background: linear-gradient(90deg, var(--gold2), var(--gold));
+      color:#1a1204;
+      font-weight:900;
+      letter-spacing:.12em;
+      cursor:pointer;
+      transition: transform .06s ease;
+    }
+    .btn:active{ transform: scale(.99); }
+    .btn[disabled]{ opacity:.75; cursor:not-allowed; }
 
-.voucherWrap{
-display:flex;
-flex-direction:column;
-align-items:center;
-gap:12px;
-}
+    .btn.secondary{
+      background: rgba(10,10,10,.65);
+      color: var(--gold);
+      border: 1px solid rgba(214,177,94,.35);
+      letter-spacing:.10em;
+    }
 
-.voucherCanvas{
-width:420px;
-aspect-ratio:9/16;
-border-radius:16px;
-overflow:hidden;
-position:relative;
-}
+    .note{
+      margin-top:10px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align:center;
+    }
 
-.voucherOverlay{
-position:absolute;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,.35);
-z-index:1;
-}
+    /* ---------- VOUCHER VIEW (PAGE 2) ---------- */
+    .hidden{ display:none !important; }
 
-.vText{
-position:absolute;
-left:10%;
-right:10%;
-text-align:center;
-z-index:2;
-}
+    .voucherWrap{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      gap:14px;
+    }
 
-.vTitle{
-top:16%;
-font-size:26px;
-color:#d6b15e;
-font-weight:800;
-letter-spacing:4px;
-}
+    /* 9:16 IG Story style */
+    .voucherCanvas{
+      width:min(420px, 100%);
+      aspect-ratio: 9 / 16;
+      border-radius: 18px;
+      overflow:hidden;
+      position:relative;
+      box-shadow: 0 20px 60px rgba(0,0,0,.65);
+      border: 1px solid rgba(214,177,94,.25);
 
-.vSubTitle{
-top:22%;
-font-size:12px;
-}
+      /* ✅ TU PLANTILLA EXACTA */
+      background: url("plantilla.jpg") center/cover no-repeat;
+    }
 
-.vName{
-top:30%;
-font-size:18px;
-font-weight:bold;
-}
+    /* Overlay suave solo para que el texto se lea sin tapar la plantilla */
+    .voucherOverlay{
+      position:absolute;
+      inset:0;
+      background: linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.18));
+      pointer-events:none;
+    }
 
-.vMeta{
-top:36%;
-font-size:14px;
-}
+    .vText{
+      position:absolute;
+      left: 10%;
+      right: 10%;
+      text-align:center;
+      color:#ffffff;
+      text-shadow: 0 2px 18px rgba(0,0,0,.75);
+      pointer-events:none;
+    }
 
-.barcodeBox{
-position:absolute;
-left:12%;
-right:12%;
-top:44%;
-background:rgba(0,0,0,.6);
-padding:10px;
-border-radius:12px;
-z-index:2;
-text-align:center;
-}
+    /* ✅ Quitamos "CÉLINE / VIP HOST" porque ya está en la plantilla */
+    .vName{
+      top: 23%;
+      font-weight:900;
+      font-size: 18px;
+      letter-spacing:.06em;
+      color: rgba(255,255,255,.95);
+    }
 
-.vCode{
-margin-top:6px;
-color:#d6b15e;
-font-weight:bold;
-}
+    .vMeta{
+      top: 29%;
+      font-weight:700;
+      font-size: 14px;
+      letter-spacing:.04em;
+      color: rgba(255,255,255,.88);
+    }
 
-.benefits{
-position:absolute;
-left:12%;
-right:12%;
-top:64%;
-background:rgba(0,0,0,.6);
-padding:10px;
-border-radius:12px;
-z-index:2;
-}
+    /* ✅ Caja elegante para el barcode (transparente) */
+    .barcodeBox{
+      position:absolute;
+      left: 12%;
+      right: 12%;
+      top: 42%;
+      padding: 10px 10px 12px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.18);
+      border: 1px solid rgba(214,177,94,.35);
+      backdrop-filter: blur(6px);
+      text-align:center;
+    }
 
-.benefits h3{
-text-align:center;
-color:#d6b15e;
-font-size:14px;
-}
+    #barcode{
+      width:100%;
+      height:72px;
+    }
 
-.vFooter{
-position:absolute;
-bottom:7%;
-left:10%;
-right:10%;
-text-align:center;
-font-size:12px;
-z-index:2;
-}
+    .vCode{
+      margin-top:8px;
+      font-weight:900;
+      letter-spacing:.16em;
+      color: var(--gold);
+      font-size: 14px;
+      text-shadow: 0 2px 14px rgba(0,0,0,.65);
+    }
 
-.actionsRow{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
-width:420px;
-}
+    .benefits{
+      position:absolute;
+      left: 12%;
+      right: 12%;
+      top: 62%;
+      padding: 14px 12px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.18);
+      border: 1px dashed rgba(214,177,94,.45);
+      backdrop-filter: blur(6px);
+      color: rgba(255,255,255,.92);
+      text-align:left;
+    }
 
-</style>
+    .benefits h3{
+      margin:0 0 10px 0;
+      text-align:center;
+      color: var(--gold);
+      letter-spacing:.10em;
+      font-size: 13px;
+      font-weight:900;
+    }
+
+    .benefits ul{
+      margin:0;
+      padding-left: 18px;
+      line-height:1.55;
+      font-size: 13px;
+      font-weight:650;
+      color: rgba(255,255,255,.92);
+      text-shadow: 0 2px 14px rgba(0,0,0,.65);
+    }
+
+    .vFooter{
+      position:absolute;
+      left: 10%;
+      right: 10%;
+      bottom: 7%;
+      text-align:center;
+      font-size: 12px;
+      color: rgba(255,255,255,.82);
+      letter-spacing:.04em;
+      text-shadow: 0 2px 16px rgba(0,0,0,.85);
+      pointer-events:none;
+    }
+
+    .actionsRow{
+      width:min(420px, 100%);
+      display:grid;
+      gap:10px;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    @media (max-width:420px){
+      .actionsRow{ grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 
 <body>
-
-<div class="wrap">
-
-<div id="pageForm">
-
-<h1 class="brand">CÉLINE</h1>
-<p class="sub">VIP HOST</p>
-
-<div class="card">
-
-<form id="vipForm">
-
-<label>HOST</label>
-<select id="host">
-<option value="H01">H01</option>
-<option value="H02">H02</option>
-<option value="H03">H03</option>
-</select>
-
-<label>CELULAR</label>
-<input id="celular" required>
-
-<label>NOMBRE</label>
-<input id="nombre" required>
-
-<label>APELLIDO</label>
-<input id="apellido" required>
-
-<label>CORREO ELECTRÓNICO</label>
-<input id="email" required>
-
-<button class="btn" id="btn">GENERAR CÓDIGO VIP</button>
-
-</form>
-
-</div>
-</div>
-
-<div id="pageVoucher" class="hidden">
-
-<div class="voucherWrap">
-
-<div class="voucherCanvas" id="voucherCanvas">
-
-<!-- IMAGEN DE FONDO REAL -->
-<img src="https://celineciba.github.io/celine-vip-host/plantilla.jpg"
-style="
-position:absolute;
-width:100%;
-height:100%;
-object-fit:cover;
-top:0;
-left:0;
-z-index:0;
-">
-
-<div class="voucherOverlay"></div>
-
-<div class="vText vTitle">CÉLINE</div>
-<div class="vText vSubTitle">VIP HOST</div>
-
-<div class="vText vName" id="vNombre"></div>
-
-<div class="vText vMeta" id="vMeta"></div>
-
-<div class="barcodeBox">
-
-<svg id="barcode"></svg>
-
-<div class="vCode" id="vCodigo"></div>
-
-</div>
-
-<div class="benefits">
-
-<h3>BENEFICIOS ACTIVADOS</h3>
-
-<ul id="benefList">
-<li>Mesa asegurada</li>
-<li>3x2 hasta 00h00</li>
-<li>5 shots bienvenida</li>
-</ul>
-
-</div>
-
-<div class="vFooter">
-Recuerda indicar en la puerta de ingreso y en barra para poder acceder
-</div>
-
-</div>
-
-<div class="actionsRow">
-
-<button class="btn secondary" id="btnNew">NUEVO CÓDIGO</button>
-
-<button class="btn" id="btnDownload">DESCARGAR IMAGEN</button>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<script>
-
-const SCRIPT_URL="https://script.google.com/macros/s/AKfycbx0JZf7NWpCXEyv03cYeiO_xNYTFqbIZr8856ebWOY0c21Pdtz1FW26wejn8K6iofjLKg/exec";
-
-const form=document.getElementById("vipForm");
-
-form.addEventListener("submit",async(e)=>{
-
-e.preventDefault()
-
-const host=document.getElementById("host").value
-const nombre=document.getElementById("nombre").value
-const apellido=document.getElementById("apellido").value
-const celular=document.getElementById("celular").value
-const email=document.getElementById("email").value
-
-const params=new URLSearchParams({host,nombre,apellido,celular,email})
-
-const response=await fetch(`${SCRIPT_URL}?${params}`)
-
-const data=await response.json()
-
-if(!data.ok){
-
-alert("error")
-return
-
-}
-
-document.getElementById("pageForm").classList.add("hidden")
-
-document.getElementById("pageVoucher").classList.remove("hidden")
-
-document.getElementById("vNombre").textContent=nombre+" "+apellido
-
-document.getElementById("vMeta").textContent=`Grupo confirmado: 5 personas • Válido hasta 22h30 • Host: ${host}`
-
-document.getElementById("vCodigo").textContent=data.codigo
-
-JsBarcode("#barcode",data.codigo,{
-format:"CODE128",
-displayValue:false
-})
-
-})
-
-document.getElementById("btnNew").onclick=()=>{
-
-document.getElementById("pageVoucher").classList.add("hidden")
-document.getElementById("pageForm").classList.remove("hidden")
-
-}
-
-document.getElementById("btnDownload").onclick=async()=>{
-
-const canvas=await html2canvas(document.getElementById("voucherCanvas"),{useCORS:true})
-
-const link=document.createElement("a")
-
-link.download="CELINE_VIP_VOUCHER.png"
-
-link.href=canvas.toDataURL()
-
-link.click()
-
-}
-
-</script>
-
+  <div class="wrap">
+
+    <!-- PAGE 1 (FORM) -->
+    <div id="pageForm">
+      <h1 class="brand">CÉLINE</h1>
+      <p class="sub">VIP HOST</p>
+
+      <div class="card">
+        <form id="vipForm">
+          <div class="grid">
+            <div>
+              <label>HOST</label>
+              <select id="host" required>
+                <option value="H01">H01</option>
+                <option value="H02">H02</option>
+                <option value="H03">H03</option>
+              </select>
+            </div>
+
+            <div>
+              <label>CELULAR</label>
+              <input id="celular" type="tel" placeholder="0999999999" required />
+            </div>
+          </div>
+
+          <div class="grid">
+            <div>
+              <label>NOMBRE</label>
+              <input id="nombre" type="text" placeholder="Nombre" required />
+            </div>
+
+            <div>
+              <label>APELLIDO</label>
+              <input id="apellido" type="text" placeholder="Apellido" required />
+            </div>
+          </div>
+
+          <div>
+            <label>CORREO ELECTRÓNICO</label>
+            <input id="email" type="email" placeholder="correo@ejemplo.com" required />
+          </div>
+
+          <button class="btn" id="btn" type="submit">GENERAR CÓDIGO VIP</button>
+          <div class="note">Se generará el código y se guardará automáticamente en Google Sheets.</div>
+        </form>
+      </div>
+    </div>
+
+    <!-- PAGE 2 (VOUCHER) -->
+    <div id="pageVoucher" class="hidden">
+      <div class="voucherWrap">
+        <div class="voucherCanvas" id="voucherCanvas">
+          <div class="voucherOverlay"></div>
+
+          <div class="vText vName" id="vNombre">—</div>
+          <div class="vText vMeta" id="vMeta">—</div>
+
+          <div class="barcodeBox">
+            <svg id="barcode"></svg>
+            <div class="vCode" id="vCodigo">—</div>
+          </div>
+
+          <div class="benefits">
+            <h3>BENEFICIOS ACTIVADOS</h3>
+            <ul id="benefList"></ul>
+          </div>
+
+          <div class="vFooter" id="vFooter">
+            Recuerda indicar en la puerta de ingreso y en barra para poder acceder.
+          </div>
+        </div>
+
+        <div class="actionsRow">
+          <button class="btn secondary" id="btnNew">NUEVO CÓDIGO</button>
+          <button class="btn" id="btnDownload">DESCARGAR IMAGEN</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ✅ TU APPS SCRIPT (GET)
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx0JZf7NWpCXEyv03cYeiO_xNYTFqbIZr8856ebWOY0c21Pdtz1FW26wejn8K6iofjLKg/exec";
+
+    const form = document.getElementById("vipForm");
+    const btn  = document.getElementById("btn");
+
+    const pageForm    = document.getElementById("pageForm");
+    const pageVoucher = document.getElementById("pageVoucher");
+
+    // ✅ Config editable
+    const PROMO = {
+      grupo: "Grupo confirmado: 5 personas",
+      valido: "Válido hasta 22h30",
+      beneficios: [
+        "Mesa asegurada",
+        "3x2 hasta 00h00",
+        "5 shots bienvenida"
+      ],
+      footer: "Recuerda indicar en la puerta de ingreso y en barra para poder acceder."
+    };
+
+    function showVoucher({host, nombre, apellido, codigo}) {
+      document.getElementById("vNombre").textContent = `${nombre} ${apellido}`.trim();
+      document.getElementById("vMeta").textContent   = `${PROMO.grupo} • ${PROMO.valido} • Host: ${host}`;
+      document.getElementById("vCodigo").textContent = codigo;
+      document.getElementById("vFooter").textContent = PROMO.footer;
+
+      const ul = document.getElementById("benefList");
+      ul.innerHTML = "";
+      PROMO.beneficios.forEach(b => {
+        const li = document.createElement("li");
+        li.textContent = b;
+        ul.appendChild(li);
+      });
+
+      // ✅ Barcode visible (BLANCO) y estable
+      JsBarcode("#barcode", codigo, {
+        format: "CODE128",
+        displayValue: false,
+        margin: 0,
+        height: 62,
+        lineColor: "#FFFFFF"   // <-- clave para que se vea
+      });
+
+      pageForm.classList.add("hidden");
+      pageVoucher.classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function showFormAgain(){
+      pageVoucher.classList.add("hidden");
+      pageForm.classList.remove("hidden");
+      form.reset();
+      btn.disabled = false;
+      btn.textContent = "GENERAR CÓDIGO VIP";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function downloadVoucher(){
+      const node = document.getElementById("voucherCanvas");
+      const canvas = await html2canvas(node, {
+        useCORS: true,
+        backgroundColor: null,
+        scale: 2
+      });
+      const a = document.createElement("a");
+      a.href = canvas.toDataURL("image/png");
+      a.download = "CELINE_VIP_VOUCHER.png";
+      a.click();
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      btn.disabled = true;
+      btn.textContent = "GENERANDO...";
+
+      const host = document.getElementById("host").value.trim();
+      const nombre = document.getElementById("nombre").value.trim();
+      const apellido = document.getElementById("apellido").value.trim();
+      const celular = document.getElementById("celular").value.trim();
+      const email = document.getElementById("email").value.trim();
+
+      const params = new URLSearchParams({ host, nombre, apellido, celular, email });
+
+      try {
+        const url = `${SCRIPT_URL}?${params.toString()}`;
+        const response = await fetch(url, { method: "GET", cache: "no-store" });
+        const result = await response.json();
+
+        if (!result.ok) {
+          alert("Error: " + (result.error || "No se pudo generar"));
+          console.error(result);
+          btn.disabled = false;
+          btn.textContent = "GENERAR CÓDIGO VIP";
+          return;
+        }
+
+        showVoucher({ host, nombre, apellido, codigo: result.codigo });
+
+      } catch (err) {
+        alert("Error generando código (conexión).");
+        console.error(err);
+        btn.disabled = false;
+        btn.textContent = "GENERAR CÓDIGO VIP";
+      }
+    });
+
+    document.getElementById("btnNew").addEventListener("click", showFormAgain);
+    document.getElementById("btnDownload").addEventListener("click", downloadVoucher);
+  </script>
 </body>
 </html>
